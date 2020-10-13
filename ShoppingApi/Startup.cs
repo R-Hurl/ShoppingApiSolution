@@ -65,6 +65,8 @@ namespace ShoppingApi
             services.AddSingleton<MapperConfiguration>(mapperConfig);
             services.AddScoped<IDoCurbsideQueries, EntityFrameworkCurbsideData>();
             services.AddScoped<IDoCurbsideCommands, EntityFrameworkCurbsideData>();
+            services.AddSingleton<CurbsideChannel>();
+            services.AddHostedService<CurbsideOrderProcessor>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

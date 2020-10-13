@@ -14,20 +14,33 @@ namespace ShoppingApi.Services
     {
         private readonly ShoppingDataContext _context;
         private readonly IMapper _mapper;
+        private readonly CurbsideChannel _channel;
 
-        public EntityFrameworkCurbsideData(ShoppingDataContext context, IMapper mapper)
+        public EntityFrameworkCurbsideData(ShoppingDataContext context, IMapper mapper, CurbsideChannel channel)
         {
             _context = context;
             _mapper = mapper;
+            _channel = channel;
         }
 
         async Task<CurbsideOrder> IDoCurbsideCommands.AddOrder(PostCurbsideOrderRequest orderToPlace)
         {
-            await Task.Delay(3000);
+            //await Task.Delay(3000);
 
             var order = _mapper.Map<CurbsideOrder>(orderToPlace);
             _context.CurbsideOrders.Add(order);
             await _context.SaveChangesAsync();
+
+            try
+            {
+                await _channel.AddCurbside(new CurbsideChannelRequest { OrderId = order.Id });
+            }
+            catch (OperationCanceledException ex)
+            {
+                // for some reason the background worker puched you in the nose (more likely the channel)
+                throw;
+            }
+
             return order;
         }
 
