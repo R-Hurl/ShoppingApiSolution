@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ShoppingApi.Models.Curbside
 {
-    public class GetCurbsideOrderResponse : Collection<CurbsideOrder>
+    public class GetCurbsideOrdersResponse : Collection<CurbsideOrder>
     {
         public int NumberOfPendingOrders { get; set; }
         public int NumberOfApprovedOrders { get; set; }
