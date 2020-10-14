@@ -11,6 +11,8 @@ using ShoppingApi.Models.Catalog;
 using AutoMapper;
 using AutoMapper.QueryableExtensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.SignalR;
+using ShoppingApi.Hubs;
 
 namespace ShoppingApi.Controllers
 {
@@ -21,14 +23,16 @@ namespace ShoppingApi.Controllers
         private readonly IMapper _mapper;
         private readonly MapperConfiguration _mapperConfig;
         private readonly ILogger<CatalogController> _logger;
+        private readonly IHubContext<CurbsideOrdersHub> _hub;
 
-        public CatalogController(ShoppingDataContext context, IConfiguration config, IMapper mapper, MapperConfiguration mapperConfig, ILogger<CatalogController> logger)
+        public CatalogController(ShoppingDataContext context, IConfiguration config, IMapper mapper, MapperConfiguration mapperConfig, ILogger<CatalogController> logger, IHubContext<CurbsideOrdersHub> hub)
         {
             _context = context;
             _config = config;
             _mapper = mapper;
             _mapperConfig = mapperConfig;
             _logger = logger;
+            _hub = hub;
         }
 
         [HttpPost("catalog")]
@@ -45,6 +49,7 @@ namespace ShoppingApi.Controllers
                 _context.ShoppingItems.Add(item);
                 await _context.SaveChangesAsync();
                 var response = _mapper.Map<GetCatalogResponseSummaryItem>(item);
+                await _hub.Clients.All.SendAsync("ShoppingItemAdded", response);
                 return StatusCode(201, response);
             }
         }
